@@ -1,0 +1,143 @@
+# ShellCrash / Mihomo — DIRECT by default, selected services via VPN
+# Proxy source: igareck/vpn-configs-for-russia (PROXIES_ONLY)
+# Provider refresh: every 6 hours
+#
+# IMPORTANT:
+# This is a standalone Mihomo core config. Before activating it in ShellCrash,
+# make sure ShellCrash's traffic-redirection mode points to the same ports:
+# mixed-port 7890, redir-port 7892, tproxy-port 7895.
+# If your ShellCrash installation uses different ports, adjust these values
+# to match its menu settings. Keep a backup of the current working setup.
+
+mixed-port: 7890
+redir-port: 7892
+tproxy-port: 7895
+allow-lan: true
+bind-address: "*"
+mode: rule
+log-level: info
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+find-process-mode: strict
+global-client-fingerprint: chrome
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+# The router firewall / ShellCrash manages transparent traffic interception.
+# These ports are local proxy listeners; do not expose them to the WAN.
+
+proxy-providers:
+  Igareck:
+    type: http
+    url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Export/Clash/PROXIES_ONLY/BLACK_VLESS_RUS_mobile_clash_proxies.yaml"
+    path: ./proxy_providers/igareck.yaml
+    interval: 21600
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 5000
+      lazy: true
+      expected-status: 204
+
+proxy-groups:
+  - name: PROXY
+    type: select
+    proxies:
+      - AUTO
+      - DIRECT
+    use:
+      - Igareck
+
+  - name: AUTO
+    type: url-test
+    use:
+      - Igareck
+    url: https://www.gstatic.com/generate_204
+    interval: 600
+    tolerance: 100
+    lazy: true
+
+# DNS is configured for the standalone core. If ShellCrash manages DNS itself,
+# use its DNS integration settings and avoid enabling two competing DNS listeners.
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+  nameserver:
+    - https://1.1.1.1/dns-query
+    - https://dns.google/dns-query
+  proxy-server-nameserver:
+    - 1.1.1.1
+    - 8.8.8.8
+  fake-ip-filter:
+    - "*.lan"
+    - "*.local"
+    - "localhost"
+    - "time.*.com"
+    - "time.*.gov"
+    - "ntp.*"
+
+rules:
+  # Discord
+  - DOMAIN-SUFFIX,discord.com,PROXY
+  - DOMAIN-SUFFIX,discord.gg,PROXY
+  - DOMAIN-SUFFIX,discordapp.com,PROXY
+  - DOMAIN-SUFFIX,discordapp.net,PROXY
+  - DOMAIN-SUFFIX,discord.media,PROXY
+  - DOMAIN-SUFFIX,discordcdn.com,PROXY
+  - DOMAIN-SUFFIX,discordstatus.com,PROXY
+
+  # Telegram
+  - DOMAIN-SUFFIX,telegram.org,PROXY
+  - DOMAIN-SUFFIX,t.me,PROXY
+  - DOMAIN-SUFFIX,telegra.ph,PROXY
+  - DOMAIN-SUFFIX,telegram.me,PROXY
+  - DOMAIN-SUFFIX,telegram.dog,PROXY
+  - IP-CIDR,91.108.4.0/22,PROXY,no-resolve
+  - IP-CIDR,91.108.8.0/22,PROXY,no-resolve
+  - IP-CIDR,91.108.12.0/22,PROXY,no-resolve
+  - IP-CIDR,91.108.16.0/22,PROXY,no-resolve
+  - IP-CIDR,91.108.56.0/22,PROXY,no-resolve
+  - IP-CIDR,149.154.160.0/20,PROXY,no-resolve
+
+  # WhatsApp
+  - DOMAIN-SUFFIX,whatsapp.com,PROXY
+  - DOMAIN-SUFFIX,whatsapp.net,PROXY
+  - DOMAIN-SUFFIX,wa.me,PROXY
+
+  # ChatGPT / OpenAI
+  - DOMAIN-SUFFIX,chatgpt.com,PROXY
+  - DOMAIN-SUFFIX,openai.com,PROXY
+  - DOMAIN-SUFFIX,oaistatic.com,PROXY
+  - DOMAIN-SUFFIX,oaiusercontent.com,PROXY
+
+  # YouTube
+  - DOMAIN-SUFFIX,youtube.com,PROXY
+  - DOMAIN-SUFFIX,youtu.be,PROXY
+  - DOMAIN-SUFFIX,youtube-nocookie.com,PROXY
+  - DOMAIN-SUFFIX,googlevideo.com,PROXY
+  - DOMAIN-SUFFIX,ytimg.com,PROXY
+  - DOMAIN-SUFFIX,youtubei.googleapis.com,PROXY
+  - DOMAIN-SUFFIX,youtube.googleapis.com,PROXY
+  - DOMAIN-SUFFIX,ggpht.com,PROXY
+
+  # Google Play (not all Google services)
+  - DOMAIN-SUFFIX,play.google.com,PROXY
+  - DOMAIN-SUFFIX,play.googleapis.com,PROXY
+  - DOMAIN-SUFFIX,play-fe.googleapis.com,PROXY
+  - DOMAIN-SUFFIX,android.clients.google.com,PROXY
+  - DOMAIN-SUFFIX,android.googleapis.com,PROXY
+  - DOMAIN-SUFFIX,gvt1.com,PROXY
+  - DOMAIN-SUFFIX,gvt2.com,PROXY
+
+  # Everything else goes direct
+  - MATCH,DIRECT
