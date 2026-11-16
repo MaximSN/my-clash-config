@@ -3,15 +3,12 @@
 # Provider refresh: every 6 hours
 #
 # IMPORTANT:
-# This is a standalone Mihomo core config. Before activating it in ShellCrash,
-# make sure ShellCrash's traffic-redirection mode points to the same ports:
-# mixed-port 7890, redir-port 7892, tproxy-port 7895.
-# If your ShellCrash installation uses different ports, adjust these values
-# to match its menu settings. Keep a backup of the current working setup.
-
+# This is a standalone Mihomo core config. ShellCrash's traffic-redirection
+# ports must match: mixed-port 7890, redir-port 7892, tproxy-port 7893.
+# Keep a backup of the current working setup before activating this config.
 mixed-port: 7890
 redir-port: 7892
-tproxy-port: 7895
+tproxy-port: 7893
 allow-lan: true
 bind-address: "*"
 mode: rule
@@ -28,7 +25,6 @@ profile:
 
 # The router firewall / ShellCrash manages transparent traffic interception.
 # These ports are local proxy listeners; do not expose them to the WAN.
-
 proxy-providers:
   Igareck:
     type: http
@@ -61,8 +57,8 @@ proxy-groups:
     tolerance: 100
     lazy: true
 
-# DNS is configured for the standalone core. If ShellCrash manages DNS itself,
-# use its DNS integration settings and avoid enabling two competing DNS listeners.
+# DNS listener uses the ShellCrash-configured port 1053.
+# Do not configure a second DNS service on the same address/port.
 dns:
   enable: true
   listen: 0.0.0.0:1053
@@ -95,7 +91,6 @@ rules:
   - DOMAIN-SUFFIX,discord.media,PROXY
   - DOMAIN-SUFFIX,discordcdn.com,PROXY
   - DOMAIN-SUFFIX,discordstatus.com,PROXY
-
   # Telegram
   - DOMAIN-SUFFIX,telegram.org,PROXY
   - DOMAIN-SUFFIX,t.me,PROXY
@@ -108,7 +103,6 @@ rules:
   - IP-CIDR,91.108.16.0/22,PROXY,no-resolve
   - IP-CIDR,91.108.56.0/22,PROXY,no-resolve
   - IP-CIDR,149.154.160.0/20,PROXY,no-resolve
-
   # WhatsApp
   - DOMAIN-SUFFIX,whatsapp.com,PROXY
   - DOMAIN-SUFFIX,whatsapp.net,PROXY
@@ -119,7 +113,6 @@ rules:
   - DOMAIN-SUFFIX,openai.com,PROXY
   - DOMAIN-SUFFIX,oaistatic.com,PROXY
   - DOMAIN-SUFFIX,oaiusercontent.com,PROXY
-
   # YouTube
   - DOMAIN-SUFFIX,youtube.com,PROXY
   - DOMAIN-SUFFIX,youtu.be,PROXY
@@ -129,7 +122,6 @@ rules:
   - DOMAIN-SUFFIX,youtubei.googleapis.com,PROXY
   - DOMAIN-SUFFIX,youtube.googleapis.com,PROXY
   - DOMAIN-SUFFIX,ggpht.com,PROXY
-
   # Google Play (not all Google services)
   - DOMAIN-SUFFIX,play.google.com,PROXY
   - DOMAIN-SUFFIX,play.googleapis.com,PROXY
