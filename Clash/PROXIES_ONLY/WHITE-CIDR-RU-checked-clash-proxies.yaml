@@ -1,0 +1,27 @@
+# ============================================================
+# Igareck Mihomo Subscription
+# Источник/Source: WHITE-CIDR-RU-checked.txt
+# 🏳️ БЕЛЫЕ СПИСКИ 🏳️ WHITE LISTS | CIDR | Только VK, Yandex, CDNvideo, Beeline
+# Количество/Quantity: 1
+# Date/Time: 2026-11-16 / 03:26 (Moscow)
+#
+# Не содержит никаких настроек, только список прокси / No settings, just proxies list;
+# ============================================================
+
+proxies:
+- name: Igareck Node 001 | 🇺🇸 United States [*CIDR] YA
+  type: vless
+  server: "\x31\x35\x38\x2e\x31\x36\x30\x2e\x31\x33\x36\x2e\x32\x33"
+  port: 443
+  uuid: "\x31\x65\x36\x62\x62\x30\x35\x66\x2d\x32\x64\x34\x35\x2d\x34\x66\x38\x38\x2d\x61\x65\x34\x64\x2d\x34\x62\x61\x61\x32\x37\x36\x33\x65\x34\x63\x66"
+  udp: true
+  tls: true
+  servername: "\x64\x7a\x65\x6e\x2e\x72\x75"
+  client-fingerprint: firefox
+  reality-opts:
+    public-key: iqzhKksx_Il2pGHH52dCpAVIz7KrRi13GxBRRZnYTEU
+    short-id: "2bfa9706998322a9"
+  network: xhttp
+  xhttp-opts:
+    path: /api/v1/data
+    mode: auto
