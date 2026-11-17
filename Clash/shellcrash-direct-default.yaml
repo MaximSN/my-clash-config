@@ -1,135 +1,199 @@
-# ShellCrash / Mihomo — DIRECT by default, selected services via VPN
-# Proxy source: igareck/vpn-configs-for-russia (PROXIES_ONLY)
-# Provider refresh: every 6 hours
-#
-# IMPORTANT:
-# This is a standalone Mihomo core config. ShellCrash's traffic-redirection
-# ports must match: mixed-port 7890, redir-port 7892, tproxy-port 7893.
-# Keep a backup of the current working setup before activating this config.
+# ShellCrash / Mihomo config.yaml
+# Основной трафик DIRECT; выбранные сервисы через прокси.
+# Прокси загружаются из исходного списка Igareck как proxy-provider.
+
 mixed-port: 7890
-redir-port: 7892
-tproxy-port: 7893
 allow-lan: true
-bind-address: "*"
 mode: rule
-log-level: info
+log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
-find-process-mode: strict
-global-client-fingerprint: chrome
+find-process-mode: off
 
-profile:
-  store-selected: true
-  store-fake-ip: true
-
-# The router firewall / ShellCrash manages transparent traffic interception.
-# These ports are local proxy listeners; do not expose them to the WAN.
 proxy-providers:
   Igareck:
     type: http
-    url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/main/Export/Clash/PROXIES_ONLY/BLACK_VLESS_RUS_mobile_clash_proxies.yaml"
-    path: ./proxy_providers/igareck.yaml
-    interval: 21600
+    url: "https://raw.githubusercontent.com/igareck/vpn-configs-for-russia/refs/heads/main/Export/Clash/PROXIES_ONLY/BLACK_SS%2BAll_RUS_clash_proxies.yaml"
+    path: /data/other_vol/ShellCrash/yamls/igareck_proxies.yaml
+    interval: 3600
+    proxy: DIRECT
     health-check:
       enable: true
-      url: https://www.gstatic.com/generate_204
-      interval: 300
+      url: "https://www.gstatic.com/generate_204"
+      interval: 600
       timeout: 5000
       lazy: true
-      expected-status: 204
+
+# Внешние списки
+rule-providers:
+  category-ads:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://cdn.jsdelivr.net/gh/hydraponique/roscomvpn-geosite/release/mihomo/category-ads.mrs"
+    path: ./ruleset/category-ads.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  ads:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://github.com/legiz-ru/mihomo-rule-sets/raw/main/oisd/small.mrs"
+    path: ./ruleset/ads.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  telegram:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://cdn.jsdelivr.net/gh/hydraponique/roscomvpn-geosite/release/mihomo/telegram.mrs"
+    path: ./ruleset/telegram.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  telegram-ips:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geoip/telegram.mrs"
+    path: ./ruleset/telegram-ips.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  discord:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://github.com/MetaCubeX/meta-rules-dat/raw/meta/geo/geosite/discord.mrs"
+    path: ./ruleset/discord.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  discord-voice:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: "https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/discord-voice-ip-list.mrs"
+    path: ./ruleset/discord-voice.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  youtube:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/youtube.mrs"
+    path: ./ruleset/youtube.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  openai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/openai.mrs"
+    path: ./ruleset/openai.mrs
+    interval: 86400
+    proxy: DIRECT
+
+  category-ai:
+    type: http
+    behavior: domain
+    format: mrs
+    url: "https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/meta/geo/geosite/category-ai-!cn.mrs"
+    path: ./ruleset/category-ai.mrs
+    interval: 3600
+    proxy: DIRECT
+
+  ru-blocked:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://raw.githubusercontent.com/Noktomezo/RussiaFancyLists/main/lists/blacklist-mihomo/domains/full-sld.mrs
+    path: ./ruleset/ru-blocked.mrs
+    interval: 86400
+    proxy: DIRECT
 
 proxy-groups:
-  - name: PROXY
+  - name: "🚀 Прокси"
     type: select
     proxies:
-      - AUTO
-      - DIRECT
-    use:
-      - Igareck
+      - "♻️ Автовыбор"
+      - "🖐 Ручной выбор"
 
-  - name: AUTO
+  - name: "♻️ Автовыбор"
     type: url-test
     use:
       - Igareck
-    url: https://www.gstatic.com/generate_204
+    url: "https://www.gstatic.com/generate_204"
     interval: 600
     tolerance: 100
     lazy: true
 
-# DNS listener uses the ShellCrash-configured port 1053.
-# Do not configure a second DNS service on the same address/port.
-dns:
-  enable: true
-  listen: 0.0.0.0:1053
-  ipv6: false
-  enhanced-mode: fake-ip
-  fake-ip-range: 198.18.0.1/16
-  default-nameserver:
-    - 1.1.1.1
-    - 8.8.8.8
-  nameserver:
-    - https://1.1.1.1/dns-query
-    - https://dns.google/dns-query
-  proxy-server-nameserver:
-    - 1.1.1.1
-    - 8.8.8.8
-  fake-ip-filter:
-    - "*.lan"
-    - "*.local"
-    - "localhost"
-    - "time.*.com"
-    - "time.*.gov"
-    - "ntp.*"
+  - name: "🖐 Ручной выбор"
+    type: select
+    use:
+      - Igareck
+
+  - name: "🌍 Обход блокировок"
+    type: select
+    proxies:
+      - "🚀 Прокси"
+
+  - name: "🛑 Реклама"
+    type: select
+    proxies:
+      - REJECT
+      - DIRECT
 
 rules:
-  # Discord
-  - DOMAIN-SUFFIX,discord.com,PROXY
-  - DOMAIN-SUFFIX,discord.gg,PROXY
-  - DOMAIN-SUFFIX,discordapp.com,PROXY
-  - DOMAIN-SUFFIX,discordapp.net,PROXY
-  - DOMAIN-SUFFIX,discord.media,PROXY
-  - DOMAIN-SUFFIX,discordcdn.com,PROXY
-  - DOMAIN-SUFFIX,discordstatus.com,PROXY
-  # Telegram
-  - DOMAIN-SUFFIX,telegram.org,PROXY
-  - DOMAIN-SUFFIX,t.me,PROXY
-  - DOMAIN-SUFFIX,telegra.ph,PROXY
-  - DOMAIN-SUFFIX,telegram.me,PROXY
-  - DOMAIN-SUFFIX,telegram.dog,PROXY
-  - IP-CIDR,91.108.4.0/22,PROXY,no-resolve
-  - IP-CIDR,91.108.8.0/22,PROXY,no-resolve
-  - IP-CIDR,91.108.12.0/22,PROXY,no-resolve
-  - IP-CIDR,91.108.16.0/22,PROXY,no-resolve
-  - IP-CIDR,91.108.56.0/22,PROXY,no-resolve
-  - IP-CIDR,149.154.160.0/20,PROXY,no-resolve
-  # WhatsApp
-  - DOMAIN-SUFFIX,whatsapp.com,PROXY
-  - DOMAIN-SUFFIX,whatsapp.net,PROXY
-  - DOMAIN-SUFFIX,wa.me,PROXY
-
-  # ChatGPT / OpenAI
-  - DOMAIN-SUFFIX,chatgpt.com,PROXY
-  - DOMAIN-SUFFIX,openai.com,PROXY
-  - DOMAIN-SUFFIX,oaistatic.com,PROXY
-  - DOMAIN-SUFFIX,oaiusercontent.com,PROXY
-  # YouTube
-  - DOMAIN-SUFFIX,youtube.com,PROXY
-  - DOMAIN-SUFFIX,youtu.be,PROXY
-  - DOMAIN-SUFFIX,youtube-nocookie.com,PROXY
-  - DOMAIN-SUFFIX,googlevideo.com,PROXY
-  - DOMAIN-SUFFIX,ytimg.com,PROXY
-  - DOMAIN-SUFFIX,youtubei.googleapis.com,PROXY
-  - DOMAIN-SUFFIX,youtube.googleapis.com,PROXY
-  - DOMAIN-SUFFIX,ggpht.com,PROXY
-  # Google Play (not all Google services)
-  - DOMAIN-SUFFIX,play.google.com,PROXY
-  - DOMAIN-SUFFIX,play.googleapis.com,PROXY
-  - DOMAIN-SUFFIX,play-fe.googleapis.com,PROXY
-  - DOMAIN-SUFFIX,android.clients.google.com,PROXY
-  - DOMAIN-SUFFIX,android.googleapis.com,PROXY
-  - DOMAIN-SUFFIX,gvt1.com,PROXY
-  - DOMAIN-SUFFIX,gvt2.com,PROXY
-
-  # Everything else goes direct
+# реклама
+  - AND,((SRC-IP-CIDR,192.168.0.224/32),(RULE-SET,category-ads)),DIRECT
+  - AND,((SRC-IP-CIDR,192.168.0.224/32),(RULE-SET,ads)),DIRECT
+  - RULE-SET,category-ads,🛑 Реклама
+  - RULE-SET,ads,🛑 Реклама
+# youtube
+  - RULE-SET,youtube,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,googlevideo.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,ytimg.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,youtubei.googleapis.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,music.youtube.com,🌍 Обход блокировок
+# discord
+  - RULE-SET,discord,🌍 Обход блокировок
+  - RULE-SET,discord-voice,🌍 Обход блокировок,no-resolve
+# telegram
+  - RULE-SET,telegram-ips,🌍 Обход блокировок,no-resolve
+  - RULE-SET,telegram,🌍 Обход блокировок
+# ChatGPT
+  - RULE-SET,openai,🌍 Обход блокировок
+  - RULE-SET,category-ai,🌍 Обход блокировок
+# По списку заблокированных в РФ
+  - RULE-SET,ru-blocked,🌍 Обход блокировок
+# разные сайты
+  - DOMAIN,play.google.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,whatsapp.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,whatsapp.net,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,wa.me,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,instagram.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,cdninstagram.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,facebook.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,fbcdn.net,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,facebook.net,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,x.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,twitter.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,twimg.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,linkedin.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,licdn.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,bbc.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,bbc.co.uk,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,dw.com,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,meduza.io,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,svoboda.org,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,currenttime.tv,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,theins.ru,🌍 Обход блокировок
+  - DOMAIN-SUFFIX,zona.media,🌍 Обход блокировок
+# все остальное
   - MATCH,DIRECT
